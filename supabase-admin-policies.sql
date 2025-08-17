@@ -130,6 +130,7 @@ CREATE POLICY "Users can update own profile" ON user_profiles
 -- =====================================================
 
 -- Crear una vista para que los admins puedan ver todos los usuarios
+-- Nota: Las vistas no necesitan políticas RLS, heredan los permisos de las tablas subyacentes
 CREATE OR REPLACE VIEW admin_users_view AS
 SELECT 
     au.id,
@@ -142,24 +143,6 @@ SELECT
     up.role
 FROM auth.users au
 LEFT JOIN user_profiles up ON au.id = up.id;
-
--- Política para la vista de administradores
-CREATE POLICY "Admin can view all users" ON admin_users_view
-    FOR SELECT
-    TO public
-    USING (
-        EXISTS (
-            SELECT 1 FROM user_profiles up
-            WHERE up.id = auth.uid()
-            AND up.role = 'admin'
-        )
-        OR 
-        EXISTS (
-            SELECT 1 FROM auth.users au
-            WHERE au.id = auth.uid()
-            AND au.email = 'saludablebela@gmail.com'
-        )
-    );
 
 -- =====================================================
 -- FUNCIONES AUXILIARES PARA ADMINISTRADORES
