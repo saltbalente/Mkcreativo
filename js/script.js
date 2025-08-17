@@ -36,7 +36,63 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial check
     revealOnScroll();
+    
+    // Inicializar funcionalidades de autenticación
+    initAuth();
 });
+
+// Funciones de autenticación para la página principal
+function initAuth() {
+    // Verificar si el usuario está logueado
+    auth.getCurrentUser().then(async user => {
+        await updateNavigation(user);
+    });
+    
+    // Escuchar cambios de autenticación
+    auth.onAuthStateChange(async (event, session) => {
+        await updateNavigation(session?.user);
+    });
+}
+
+async function updateNavigation(user) {
+    const navMenu = document.querySelector('.nav-menu');
+    if (!navMenu) return;
+    
+    if (user) {
+        // Usuario logueado - verificar si es admin
+        const isAdmin = await auth.isAdmin(user);
+        
+        navMenu.innerHTML = `
+            <a href="index.html">Inicio</a>
+            ${isAdmin ? '<a href="admin.html">Admin</a>' : ''}
+            <a href="privacy.html">Privacidad</a>
+            <a href="#" onclick="handleLogout()">Cerrar Sesión</a>
+            <span style="color: #00d4ff; font-weight: 600; padding: 10px 20px; border-radius: 25px; background: rgba(0, 212, 255, 0.1);">
+                ${user.user_metadata?.full_name || user.email}
+            </span>
+        `;
+    } else {
+        // Usuario no logueado - mostrar opciones de login/registro
+        navMenu.innerHTML = `
+            <a href="index.html">Inicio</a>
+            <a href="login.html">Iniciar Sesión</a>
+            <a href="register.html">Registrarse</a>
+            <a href="privacy.html">Privacidad</a>
+        `;
+    }
+}
+
+async function handleLogout() {
+    const result = await auth.signOut();
+    if (result.success) {
+        utils.showSuccess('Sesión cerrada exitosamente');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    } else {
+        utils.showError('Error al cerrar sesión');
+    }
+}
 
 // Listen for scroll events
 window.addEventListener('scroll', revealOnScroll);

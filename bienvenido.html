@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Bienvenido! - mkCreativo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .welcome-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .welcome-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        .checkmark {
+            width: 40px;
+            height: 40px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .welcome-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+        
+        .btn-welcome {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .welcome-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+            padding-top: 40px;
+            border-top: 1px solid #eee;
+        }
+        
+        .feature-item {
+            text-align: center;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .welcome-card {
+                padding: 40px 20px;
+            }
+            
+            .welcome-title {
+                font-size: 2rem;
+            }
+            
+            .welcome-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-welcome {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="welcome-card">
+            <img src="img/mkcreativo-logo.svg" alt="mkCreativo Logo" class="welcome-logo">
+            
+            <div class="success-icon">
+                <div class="checkmark">✓</div>
+            </div>
+            
+            <h1 class="welcome-title">¡Bienvenido a mkCreativo!</h1>
+            
+            <p class="welcome-subtitle">
+                Tu cuenta ha sido verificada exitosamente. Ahora puedes acceder a todas nuestras herramientas y servicios de marketing digital para hacer crecer tu negocio.
+            </p>
+            
+            <div class="welcome-actions">
+                <a href="index.html" class="btn-welcome btn-primary">Explorar Servicios</a>
+                <a href="login.html" class="btn-welcome btn-secondary">Iniciar Sesión</a>
+            </div>
+            
+            <div class="welcome-features">
+                <div class="feature-item">
+                    <div class="feature-icon">🚀</div>
+                    <h3 class="feature-title">Estrategias Personalizadas</h3>
+                    <p class="feature-description">Desarrollamos planes de marketing únicos para tu negocio</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Análisis Detallados</h3>
+                    <p class="feature-description">Métricas y reportes para optimizar tus campañas</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">💡</div>
+                    <h3 class="feature-title">Soporte Experto</h3>
+                    <p class="feature-description">Nuestro equipo te acompaña en cada paso</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        // Verificar si el usuario está autenticado
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                
+                if (user && user.email_confirmed_at) {
+                    // Usuario verificado, mostrar mensaje personalizado
+                    const subtitle = document.querySelector('.welcome-subtitle');
+                    subtitle.innerHTML = `
+                        ¡Hola <strong>${user.user_metadata?.full_name || user.email}</strong>!<br>
+                        Tu cuenta ha sido verificada exitosamente. Ahora puedes acceder a todas nuestras herramientas y servicios de marketing digital para hacer crecer tu negocio.
+                    `;
+                }
+            } catch (error) {
+                console.log('Usuario no autenticado o error:', error);
+            }
+        });
+        
+        // Función para redirigir después de un tiempo
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirect = urlParams.get('redirect');
+            
+            if (redirect === 'login') {
+                // Opcional: redirigir automáticamente al login después de 10 segundos
+                // window.location.href = 'login.html';
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

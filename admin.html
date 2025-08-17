@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador - mkCreativo</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+        
+        .admin-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(135deg, #00d4ff 0%, #ff00ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-admin {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #00d4ff 0%, #ff00ff 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #00d4ff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        .admin-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        .content-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-header h2 {
+            color: #fff;
+            font-size: 1.8em;
+            margin: 0;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .users-table th,
+        .users-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .users-table th {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        .users-table td {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .users-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .user-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+        }
+        
+        .status-pending {
+            background: rgba(255, 212, 59, 0.2);
+            color: #ffd43b;
+        }
+        
+        .status-inactive {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-edit {
+            background: #00d4ff;
+            color: #fff;
+        }
+        
+        .btn-delete {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        
+        .btn-small:hover {
+            transform: translateY(-1px);
+            opacity: 0.8;
+        }
+        
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 40px;
+        }
+        
+        .error-message {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.5);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .admin-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .users-table {
+                font-size: 14px;
+            }
+            
+            .users-table th,
+            .users-table td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div>
+                <h1>Panel de Administrador</h1>
+                <p id="admin-welcome" style="color: rgba(255, 255, 255, 0.8); margin: 5px 0 0 0;">Cargando...</p>
+            </div>
+            <div class="admin-actions">
+                <a href="index.html" class="btn-admin btn-secondary">← Ir al Sitio</a>
+                <button id="logout-btn" class="btn-admin">Cerrar Sesión</button>
+            </div>
+        </div>
+        
+        <div id="error-container"></div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Usuarios</h3>
+                <div class="stat-number" id="total-users">-</div>
+                <div class="stat-label">Registrados</div>
+            </div>
+            <div class="stat-card">
+                <h3>Usuarios Activos</h3>
+                <div class="stat-number" id="active-users">-</div>
+                <div class="stat-label">Confirmados</div>
+            </div>
+            <div class="stat-card">
+                <h3>Nuevos Hoy</h3>
+                <div class="stat-number" id="new-today">-</div>
+                <div class="stat-label">Registros</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pendientes</h3>
+                <div class="stat-number" id="pending-users">-</div>
+                <div class="stat-label">Sin confirmar</div>
+            </div>
+        </div>
+        
+        <div class="admin-content">
+            <div class="content-section">
+                <div class="section-header">
+                    <h2>Gestión de Usuarios</h2>
+                    <input type="text" id="search-users" class="search-box" placeholder="Buscar usuarios...">
+                </div>
+                
+                <div id="users-content">
+                    <div class="loading">Cargando usuarios...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar si el usuario es admin
+            const user = await auth.getCurrentUser();
+            if (!user) {
+                utils.redirect('login.html');
+                return;
+            }
+            
+            const isAdmin = await auth.isAdmin(user);
+            if (!isAdmin) {
+                alert('Acceso denegado. Solo administradores pueden acceder a esta página.');
+                utils.redirect('index.html');
+                return;
+            }
+            
+            // Mostrar bienvenida
+            document.getElementById('admin-welcome').textContent = `Bienvenido, ${user.user_metadata?.full_name || user.email}`;
+            
+            // Configurar logout
+            document.getElementById('logout-btn').addEventListener('click', async function() {
+                const result = await auth.signOut();
+                if (result.success) {
+                    utils.redirect('index.html');
+                }
+            });
+            
+            // Cargar estadísticas y usuarios
+            await loadAdminData();
+            
+            // Configurar búsqueda
+            document.getElementById('search-users').addEventListener('input', function() {
+                filterUsers(this.value);
+            });
+        });
+        
+        async function loadAdminData() {
+            const user = await auth.getCurrentUser();
+            
+            if (!user) {
+                utils.redirect('login.html');
+                return;
+            }
+            
+            const isAdmin = await auth.isAdmin(user);
+            if (!isAdmin) {
+                utils.showError('Acceso denegado. Solo administradores pueden acceder a esta página.');
+                setTimeout(() => {
+                    utils.redirect('index.html');
+                }, 2000);
+                return;
+            }
+            
+            // Cargar datos reales de Supabase
+            await loadRealData();
+        }
+        
+        async function loadRealData() {
+            try {
+                // Obtener todos los usuarios de Supabase Auth
+                const { data: { users }, error } = await supabaseClient.auth.admin.listUsers();
+                
+                if (error) {
+                    console.error('Error loading users:', error);
+                    showExampleData(); // Fallback a datos de ejemplo
+                    return;
+                }
+                
+                showRealData({ users });
+                
+            } catch (error) {
+                console.error('Error in loadRealData:', error);
+                showExampleData(); // Fallback a datos de ejemplo
+            }
+        }
+        
+        function showExampleData() {
+            // Datos de ejemplo para demostración cuando no se pueden cargar datos reales
+            document.getElementById('total-users').textContent = '15';
+            document.getElementById('active-users').textContent = '12';
+            document.getElementById('new-today').textContent = '3';
+            document.getElementById('pending-users').textContent = '3';
+            
+            const exampleUsers = [
+                {
+                    id: '1',
+                    email: 'admin@mkcreativo.com',
+                    full_name: 'Administrador',
+                    created_at: new Date().toISOString(),
+                    email_confirmed_at: new Date().toISOString(),
+                    user_metadata: { user_type: 'admin', company: 'mkCreativo' }
+                },
+                {
+                    id: '2',
+                    email: 'cliente1@ejemplo.com',
+                    full_name: 'Juan Pérez',
+                    created_at: new Date(Date.now() - 86400000).toISOString(),
+                    email_confirmed_at: new Date(Date.now() - 86400000).toISOString(),
+                    user_metadata: { user_type: 'client', company: 'Empresa ABC' }
+                },
+                {
+                    id: '3',
+                    email: 'prospecto1@ejemplo.com',
+                    full_name: 'María García',
+                    created_at: new Date(Date.now() - 172800000).toISOString(),
+                    email_confirmed_at: null,
+                    user_metadata: { user_type: 'prospect', company: 'Startup XYZ' }
+                }
+            ];
+            
+            displayUsers(exampleUsers);
+            
+            // Mostrar mensaje informativo
+            showError('Mostrando datos de ejemplo. Para ver datos reales, configure los permisos de administrador en Supabase.');
+        }
+        
+        function showRealData(users) {
+            const totalUsers = users.users.length;
+            const activeUsers = users.users.filter(u => u.email_confirmed_at).length;
+            const today = new Date().toDateString();
+            const newToday = users.users.filter(u => new Date(u.created_at).toDateString() === today).length;
+            const pendingUsers = totalUsers - activeUsers;
+            
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('active-users').textContent = activeUsers;
+            document.getElementById('new-today').textContent = newToday;
+            document.getElementById('pending-users').textContent = pendingUsers;
+            
+            displayUsers(users.users);
+        }
+        
+        function displayUsers(users) {
+            const usersContent = document.getElementById('users-content');
+            
+            if (users.length === 0) {
+                usersContent.innerHTML = '<div class="loading">No hay usuarios registrados.</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr data-user-id="${user.id}">
+                                <td>
+                                    <strong>${user.user_metadata?.full_name || 'Sin nombre'}</strong><br>
+                                    <small style="color: rgba(255,255,255,0.6);">${user.user_metadata?.company || 'Sin empresa'}</small>
+                                </td>
+                                <td>${user.email}</td>
+                                <td>
+                                    <span class="user-status">
+                                        ${user.user_metadata?.user_type || 'N/A'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="user-status ${user.email_confirmed_at ? 'status-active' : 'status-pending'}">
+                                        ${user.email_confirmed_at ? 'Activo' : 'Pendiente'}
+                                    </span>
+                                </td>
+                                <td>${new Date(user.created_at).toLocaleDateString('es-ES')}</td>
+                                <td>
+                                    <div class="user-actions">
+                                        <button class="btn-small btn-edit" onclick="editUser('${user.id}')">
+                                            Editar
+                                        </button>
+                                        <button class="btn-small btn-delete" onclick="deleteUser('${user.id}')">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            usersContent.innerHTML = tableHTML;
+        }
+        
+        function filterUsers(searchTerm) {
+            const rows = document.querySelectorAll('.users-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matches = text.includes(searchTerm.toLowerCase());
+                row.style.display = matches ? '' : 'none';
+            });
+        }
+        
+        async function editUser(userId) {
+            const newEmail = prompt('Ingrese el nuevo email del usuario:');
+            if (!newEmail) return;
+            
+            if (!utils.validateEmail(newEmail)) {
+                utils.showError('Email inválido');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.admin.updateUserById(
+                    userId,
+                    { email: newEmail }
+                );
+                
+                if (error) {
+                    utils.showError('Error al actualizar usuario: ' + error.message);
+                } else {
+                    utils.showSuccess('Usuario actualizado exitosamente');
+                    await loadRealData(); // Recargar datos
+                }
+            } catch (error) {
+                utils.showError('Error al actualizar usuario');
+                console.error('Error updating user:', error);
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabaseClient.auth.admin.deleteUser(userId);
+                
+                if (error) {
+                    utils.showError('Error al eliminar usuario: ' + error.message);
+                } else {
+                    utils.showSuccess('Usuario eliminado exitosamente');
+                    await loadRealData(); // Recargar datos
+                }
+            } catch (error) {
+                utils.showError('Error al eliminar usuario');
+                console.error('Error deleting user:', error);
+            }
+        }
+        
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    </script>
+</body>
+</html>
