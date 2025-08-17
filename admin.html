@@ -387,13 +387,42 @@
                     throw new Error('Acceso denegado. Se requieren permisos de administrador.');
                 }
 
-                // Usar la nueva función RPC para obtener todos los usuarios
-                const { data: users, error: usersError } = await supabaseClient.rpc('get_all_users');
-                if (usersError) throw usersError;
+                let users = [];
+                let stats = {};
 
-                // Obtener estadísticas usando RPC
-                const { data: stats, error: statsError } = await supabaseClient.rpc('get_user_stats');
-                if (statsError) throw statsError;
+                // Intentar usar las funciones RPC primero
+                try {
+                    const { data: rpcUsers, error: usersError } = await supabaseClient.rpc('get_all_users');
+                    if (!usersError && rpcUsers) {
+                        users = rpcUsers;
+                    }
+                } catch (rpcError) {
+                    console.warn('RPC get_all_users no disponible:', rpcError);
+                }
+
+                try {
+                    const { data: rpcStats, error: statsError } = await supabaseClient.rpc('get_user_stats');
+                    if (!statsError && rpcStats) {
+                        stats = rpcStats;
+                    }
+                } catch (rpcError) {
+                    console.warn('RPC get_user_stats no disponible:', rpcError);
+                }
+
+                // Si las funciones RPC no funcionan, usar consultas directas
+                if (users.length === 0) {
+                    // Obtener usuarios de auth.users (requiere permisos especiales)
+                    const { data: profiles, error: profilesError } = await supabaseClient
+                        .from('user_profiles')
+                        .select('*');
+                    
+                    if (!profilesError && profiles) {
+                        users = profiles;
+                    } else {
+                        console.warn('No se pudieron obtener perfiles:', profilesError);
+                        throw new Error('No se pueden cargar los datos de usuarios. Verifique la configuración de Supabase.');
+                    }
+                }
 
                 // Formatear datos para la vista
                 const formattedUsers = users.map(user => ({
@@ -407,13 +436,31 @@
                 }));
 
                 displayUsers(formattedUsers);
-                updateStatsFromRPC(stats);
+                
+                // Actualizar estadísticas
+                if (Object.keys(stats).length > 0) {
+                    updateStatsFromRPC(stats);
+                } else {
+                    // Calcular estadísticas manualmente
+                    const totalUsers = formattedUsers.length;
+                    const activeUsers = formattedUsers.filter(u => u.status === 'active').length;
+                    const pendingUsers = totalUsers - activeUsers;
+                    const adminUsers = formattedUsers.filter(u => u.role === 'admin').length;
+                    
+                    document.getElementById('total-users').textContent = totalUsers;
+                    document.getElementById('active-users').textContent = activeUsers;
+                    document.getElementById('new-today').textContent = '0';
+                    document.getElementById('pending-users').textContent = pendingUsers;
+                }
                 
                 // Ocultar mensaje de datos de ejemplo
                 const exampleMessage = document.querySelector('.example-data-notice');
                 if (exampleMessage) {
                     exampleMessage.style.display = 'none';
                 }
+                
+                // Mostrar mensaje de éxito
+                showSuccess('Datos cargados correctamente desde Supabase.');
                 
             } catch (error) {
                 console.error('Error loading real data:', error);
@@ -482,6 +529,34 @@
             document.getElementById('active-users').textContent = stats.confirmed_users || 0;
             document.getElementById('new-today').textContent = stats.new_today || 0;
             document.getElementById('pending-users').textContent = stats.unconfirmed_users || 0;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert alert-error';
+            errorDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff4444; color: white; padding: 15px; border-radius: 5px; z-index: 1000; max-width: 400px;';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success';
+            successDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #44aa44; color: white; padding: 15px; border-radius: 5px; z-index: 1000; max-width: 400px;';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
         }
         
         function displayUsers(users) {

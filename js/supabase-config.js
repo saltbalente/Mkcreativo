@@ -73,13 +73,19 @@ const auth = {
     async isAdmin(user) {
         if (!user) return false;
         
-        // Verificar por email específico
+        // Verificar si es el email específico de administrador
         if (user.email === 'saludablebela@gmail.com') {
             return true;
         }
         
         try {
-            // Verificar en la tabla user_profiles
+            // Primero intentar usar la función RPC si existe
+            const { data: isAdminRPC, error: rpcError } = await supabaseClient.rpc('is_admin');
+            if (!rpcError && isAdminRPC !== null) {
+                return isAdminRPC;
+            }
+            
+            // Fallback: verificar en la tabla user_profiles
             const { data, error } = await supabaseClient
                 .from('user_profiles')
                 .select('role')
@@ -88,13 +94,15 @@ const auth = {
             
             if (error) {
                 console.error('Error checking admin status:', error);
-                return false;
+                // Si no existe la tabla o el registro, verificar solo por email
+                return user.email === 'saludablebela@gmail.com';
             }
             
             return data?.role === 'admin';
         } catch (error) {
             console.error('Error in isAdmin:', error);
-            return false;
+            // Fallback final: solo verificar por email
+            return user.email === 'saludablebela@gmail.com';
         }
     },
 
