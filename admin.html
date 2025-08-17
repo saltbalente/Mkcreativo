@@ -376,20 +376,49 @@
         
         async function loadRealData() {
             try {
-                // Obtener todos los usuarios de Supabase Auth
-                const { data: { users }, error } = await supabaseClient.auth.admin.listUsers();
+                // Verificar si el usuario es admin
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    throw new Error('Usuario no autenticado');
+                }
+
+                const isUserAdmin = await auth.isAdmin(user);
+                if (!isUserAdmin) {
+                    throw new Error('Acceso denegado. Se requieren permisos de administrador.');
+                }
+
+                // Usar la nueva función RPC para obtener todos los usuarios
+                const { data: users, error: usersError } = await supabaseClient.rpc('get_all_users');
+                if (usersError) throw usersError;
+
+                // Obtener estadísticas usando RPC
+                const { data: stats, error: statsError } = await supabaseClient.rpc('get_user_stats');
+                if (statsError) throw statsError;
+
+                // Formatear datos para la vista
+                const formattedUsers = users.map(user => ({
+                    id: user.id,
+                    email: user.email,
+                    full_name: user.full_name || 'N/A',
+                    role: user.role || 'user',
+                    status: user.email_confirmed_at ? 'active' : 'pending',
+                    created_at: user.created_at,
+                    last_sign_in: user.last_sign_in_at
+                }));
+
+                displayUsers(formattedUsers);
+                updateStatsFromRPC(stats);
                 
-                if (error) {
-                    console.error('Error loading users:', error);
-                    showExampleData(); // Fallback a datos de ejemplo
-                    return;
+                // Ocultar mensaje de datos de ejemplo
+                const exampleMessage = document.querySelector('.example-data-notice');
+                if (exampleMessage) {
+                    exampleMessage.style.display = 'none';
                 }
                 
-                showRealData({ users });
-                
             } catch (error) {
-                console.error('Error in loadRealData:', error);
-                showExampleData(); // Fallback a datos de ejemplo
+                console.error('Error loading real data:', error);
+                showError('Error al cargar datos reales: ' + error.message + '. Mostrando datos de ejemplo.');
+                showExampleData();
             }
         }
         
@@ -446,6 +475,13 @@
             document.getElementById('pending-users').textContent = pendingUsers;
             
             displayUsers(users.users);
+        }
+        
+        function updateStatsFromRPC(stats) {
+            document.getElementById('total-users').textContent = stats.total_users || 0;
+            document.getElementById('active-users').textContent = stats.confirmed_users || 0;
+            document.getElementById('new-today').textContent = stats.new_today || 0;
+            document.getElementById('pending-users').textContent = stats.unconfirmed_users || 0;
         }
         
         function displayUsers(users) {
@@ -517,48 +553,90 @@
         }
         
         async function editUser(userId) {
-            const newEmail = prompt('Ingrese el nuevo email del usuario:');
-            if (!newEmail) return;
-            
-            if (!utils.validateEmail(newEmail)) {
-                utils.showError('Email inválido');
-                return;
-            }
-            
             try {
+                // Verificar permisos de admin
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                const isUserAdmin = await auth.isAdmin(user);
+                if (!isUserAdmin) {
+                    showError('Acceso denegado. Se requieren permisos de administrador.');
+                    return;
+                }
+
+                const newEmail = prompt('Ingrese el nuevo email del usuario:');
+                if (!newEmail) return;
+                
+                if (!utils.validateEmail(newEmail)) {
+                    showError('Email inválido');
+                    return;
+                }
+                
+                // Actualizar usuario usando Supabase Admin API
                 const { data, error } = await supabaseClient.auth.admin.updateUserById(
                     userId,
                     { email: newEmail }
                 );
                 
                 if (error) {
-                    utils.showError('Error al actualizar usuario: ' + error.message);
-                } else {
-                    utils.showSuccess('Usuario actualizado exitosamente');
-                    await loadRealData(); // Recargar datos
+                    showError('Error al actualizar usuario: ' + error.message);
+                    return;
                 }
+
+                // También actualizar el perfil si existe
+                const { error: profileError } = await supabaseClient
+                    .from('user_profiles')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('id', userId);
+
+                if (profileError) {
+                    console.warn('Error updating profile:', profileError);
+                }
+
+                showSuccess('Usuario actualizado exitosamente');
+                await loadRealData(); // Recargar datos
+                
             } catch (error) {
-                utils.showError('Error al actualizar usuario');
+                showError('Error al actualizar usuario');
                 console.error('Error updating user:', error);
             }
         }
         
         async function deleteUser(userId) {
-            if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
-                return;
-            }
-            
             try {
+                // Verificar permisos de admin
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                const isUserAdmin = await auth.isAdmin(user);
+                if (!isUserAdmin) {
+                    showError('Acceso denegado. Se requieren permisos de administrador.');
+                    return;
+                }
+
+                if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+                    return;
+                }
+                
+                // Primero eliminar el perfil del usuario
+                const { error: profileError } = await supabaseClient
+                    .from('user_profiles')
+                    .delete()
+                    .eq('id', userId);
+
+                if (profileError) {
+                    console.warn('Error deleting profile:', profileError);
+                }
+
+                // Luego eliminar usuario usando Supabase Admin API
                 const { data, error } = await supabaseClient.auth.admin.deleteUser(userId);
                 
                 if (error) {
-                    utils.showError('Error al eliminar usuario: ' + error.message);
-                } else {
-                    utils.showSuccess('Usuario eliminado exitosamente');
-                    await loadRealData(); // Recargar datos
+                    showError('Error al eliminar usuario: ' + error.message);
+                    return;
                 }
+
+                showSuccess('Usuario eliminado exitosamente');
+                await loadRealData(); // Recargar datos
+                
             } catch (error) {
-                utils.showError('Error al eliminar usuario');
+                showError('Error al eliminar usuario');
                 console.error('Error deleting user:', error);
             }
         }

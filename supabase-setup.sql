@@ -17,6 +17,39 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- 3. CREAR POLÍTICAS DE SEGURIDAD
 
+-- Política para que los administradores puedan ver todos los perfiles
+CREATE POLICY "Admins can view all profiles" ON public.user_profiles
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles 
+            WHERE id = auth.uid() 
+            AND role = 'admin'
+        ) OR 
+        auth.jwt() ->> 'email' = 'saludablebela@gmail.com'
+    );
+
+-- Política para que los administradores puedan actualizar todos los perfiles
+CREATE POLICY "Admins can update all profiles" ON public.user_profiles
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles 
+            WHERE id = auth.uid() 
+            AND role = 'admin'
+        ) OR 
+        auth.jwt() ->> 'email' = 'saludablebela@gmail.com'
+    );
+
+-- Política para que los administradores puedan eliminar todos los perfiles
+CREATE POLICY "Admins can delete all profiles" ON public.user_profiles
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM public.user_profiles 
+            WHERE id = auth.uid() 
+            AND role = 'admin'
+        ) OR 
+        auth.jwt() ->> 'email' = 'saludablebela@gmail.com'
+    );
+
 -- Política para que los usuarios puedan ver su propio perfil
 CREATE POLICY "Users can view own profile" ON public.user_profiles
     FOR SELECT USING (auth.uid() = id);
@@ -25,25 +58,7 @@ CREATE POLICY "Users can view own profile" ON public.user_profiles
 CREATE POLICY "Users can update own profile" ON public.user_profiles
     FOR UPDATE USING (auth.uid() = id);
 
--- Política para que los admins puedan ver todos los perfiles
-CREATE POLICY "Admins can view all profiles" ON public.user_profiles
-    FOR SELECT USING (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
-
--- Política para que los admins puedan actualizar cualquier perfil
-CREATE POLICY "Admins can update all profiles" ON public.user_profiles
-    FOR UPDATE USING (
-        EXISTS (
-            SELECT 1 FROM public.user_profiles
-            WHERE id = auth.uid() AND role = 'admin'
-        )
-    );
-
--- Política para insertar nuevos perfiles (solo durante el registro)
+-- Política para que los usuarios autenticados puedan insertar su perfil
 CREATE POLICY "Enable insert for authenticated users" ON public.user_profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
 
