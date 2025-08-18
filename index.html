@@ -230,6 +230,8 @@
 
         // Función para actualizar la navegación según el estado de autenticación
         function updateNavigation(isLoggedIn, userName = '', isAdmin = false) {
+            console.log('updateNavigation called:', { isLoggedIn, userName, isAdmin });
+            
             // Enlaces del menú desktop
             const loginLink = document.getElementById('login-link');
             const registerLink = document.getElementById('register-link');
@@ -241,6 +243,8 @@
             const mobileRegisterLink = document.getElementById('mobile-register-link');
             const mobileProfileLink = document.getElementById('mobile-profile-link');
             const mobileLogoutLink = document.getElementById('mobile-logout-link');
+            
+            console.log('Mobile profile link found:', mobileProfileLink);
 
             if (isLoggedIn) {
                 // Usuario logueado: ocultar login/registro, mostrar perfil/logout
@@ -258,6 +262,7 @@
                 
                 // Configurar enlace según el rol del usuario
                 if (isAdmin) {
+                    console.log('Setting admin links for user:', userName);
                     // Admin: enlace al panel de administrador
                     profileLink.href = 'admin.html';
                     profileLink.textContent = userName || 'Admin Panel';
@@ -265,6 +270,7 @@
                     
                     mobileProfileLink.href = 'admin.html';
                     mobileProfileLink.textContent = userName || 'Admin Panel';
+                    console.log('Mobile profile link set to:', mobileProfileLink.href, mobileProfileLink.textContent);
                 } else {
                     // Usuario normal: enlace al perfil
                     profileLink.href = 'profile.html';
@@ -322,11 +328,16 @@
                     
                     // Verificar si es administrador
                     try {
-                        const { data: adminCheck } = await supabaseClient
+                        const { data: adminCheck, error: adminError } = await supabaseClient
                             .rpc('is_admin');
-                        isAdmin = adminCheck === true;
+                        if (adminError) {
+                            console.error('Error verificando rol de admin:', adminError);
+                        } else {
+                            isAdmin = adminCheck === true;
+                            console.log('Admin check result:', adminCheck, 'isAdmin:', isAdmin);
+                        }
                     } catch (adminError) {
-                        console.log('Error verificando rol de admin:', adminError);
+                        console.error('Error verificando rol de admin:', adminError);
                     }
                     
                     updateNavigation(true, userName, isAdmin);
@@ -349,11 +360,16 @@
                 
                 // Verificar si es administrador
                 try {
-                    const { data: adminCheck } = await supabaseClient
+                    const { data: adminCheck, error: adminError } = await supabaseClient
                         .rpc('is_admin');
-                    isAdmin = adminCheck === true;
+                    if (adminError) {
+                        console.error('Error verificando rol de admin:', adminError);
+                    } else {
+                        isAdmin = adminCheck === true;
+                        console.log('Admin check result (auth change):', adminCheck, 'isAdmin:', isAdmin);
+                    }
                 } catch (adminError) {
-                    console.log('Error verificando rol de admin:', adminError);
+                    console.error('Error verificando rol de admin:', adminError);
                 }
                 
                 updateNavigation(true, userName, isAdmin);
