@@ -725,33 +725,26 @@
                     return;
                 }
 
-                if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+                if (!confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción eliminará su perfil pero la cuenta de autenticación permanecerá (requiere eliminación manual desde Supabase Dashboard).')) {
                     return;
                 }
                 
-                // Primero eliminar el perfil del usuario
-                const { error: profileError } = await supabaseClient
-                    .from('user_profiles')
-                    .delete()
-                    .eq('id', userId);
-
-                if (profileError) {
-                    console.warn('Error deleting profile:', profileError);
-                }
-
-                // Luego eliminar usuario usando Supabase Admin API
-                const { data, error } = await supabaseClient.auth.admin.deleteUser(userId);
+                // Usar función RPC para eliminar usuario de forma segura
+                const { data, error } = await supabaseClient.rpc('delete_user_admin', {
+                    target_user_id: userId
+                });
                 
                 if (error) {
                     showError('Error al eliminar usuario: ' + error.message);
+                    console.error('RPC Error:', error);
                     return;
                 }
 
-                showSuccess('Usuario eliminado exitosamente');
+                showSuccess('Perfil de usuario eliminado exitosamente. Nota: La cuenta de autenticación permanece activa.');
                 await loadRealData(); // Recargar datos
                 
             } catch (error) {
-                showError('Error al eliminar usuario');
+                showError('Error al eliminar usuario: ' + error.message);
                 console.error('Error deleting user:', error);
             }
         }
