@@ -11,10 +11,12 @@
     <header class="header">
         <div class="container">
             <img src="img/mkcreativo-logo.svg" alt="mkCreativo" class="logo">
-            <nav class="nav-menu">
+            <nav class="nav-menu" id="nav-menu">
                 <a href="index.html">Inicio</a>
-                <a href="login.html">Iniciar Sesión</a>
-                <a href="register.html">Registrarse</a>
+                <a href="login.html" id="login-link">Iniciar Sesión</a>
+                <a href="register.html" id="register-link">Registrarse</a>
+                <a href="profile.html" id="profile-link" style="display: none;">Mi Perfil</a>
+                <a href="#" id="logout-link" style="display: none;" onclick="signOut()">Cerrar Sesión</a>
                 <a href="privacy.html">Privacidad</a>
             </nav>
         </div>
@@ -190,6 +192,97 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
+    <script>
+        // Función para cerrar sesión
+        async function signOut() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                
+                alert('Sesión cerrada correctamente');
+                updateNavigation(false);
+            } catch (error) {
+                console.error('Error cerrando sesión:', error);
+                alert('Error al cerrar sesión');
+            }
+        }
+
+        // Función para actualizar la navegación según el estado de autenticación
+        function updateNavigation(isLoggedIn, userName = '') {
+            const loginLink = document.getElementById('login-link');
+            const registerLink = document.getElementById('register-link');
+            const profileLink = document.getElementById('profile-link');
+            const logoutLink = document.getElementById('logout-link');
+
+            if (isLoggedIn) {
+                // Usuario logueado: ocultar login/registro, mostrar perfil/logout
+                loginLink.style.display = 'none';
+                registerLink.style.display = 'none';
+                profileLink.style.display = 'inline';
+                logoutLink.style.display = 'inline';
+                
+                // Actualizar texto del enlace de perfil con el nombre del usuario
+                if (userName) {
+                    profileLink.textContent = userName;
+                    profileLink.title = 'Ver mi perfil';
+                } else {
+                    profileLink.textContent = 'Mi Perfil';
+                }
+            } else {
+                // Usuario no logueado: mostrar login/registro, ocultar perfil/logout
+                loginLink.style.display = 'inline';
+                registerLink.style.display = 'inline';
+                profileLink.style.display = 'none';
+                logoutLink.style.display = 'none';
+            }
+        }
+
+        // Verificar estado de autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                
+                if (user) {
+                    // Usuario autenticado
+                    let userName = user.user_metadata?.full_name || user.email;
+                    
+                    // Intentar obtener el nombre del perfil
+                    try {
+                        const { data: profile } = await supabaseClient
+                            .from('user_profiles')
+                            .select('full_name')
+                            .eq('id', user.id)
+                            .single();
+                        
+                        if (profile && profile.full_name) {
+                            userName = profile.full_name;
+                        }
+                    } catch (profileError) {
+                        console.log('No se pudo obtener el perfil:', profileError);
+                    }
+                    
+                    updateNavigation(true, userName);
+                } else {
+                    // Usuario no autenticado
+                    updateNavigation(false);
+                }
+            } catch (error) {
+                console.log('Error verificando autenticación:', error);
+                updateNavigation(false);
+            }
+        });
+
+        // Escuchar cambios en el estado de autenticación
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                const user = session.user;
+                const userName = user.user_metadata?.full_name || user.email;
+                updateNavigation(true, userName);
+            } else if (event === 'SIGNED_OUT') {
+                updateNavigation(false);
+            }
+        });
+    </script>
 </body>
 </html>
 
