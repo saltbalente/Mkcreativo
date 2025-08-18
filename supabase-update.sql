@@ -6,6 +6,12 @@
 -- NOTA: Este archivo contiene solo las actualizaciones necesarias
 -- para agregar las funciones RPC faltantes sin recrear tablas existentes
 
+-- ELIMINAR FUNCIONES EXISTENTES SI EXISTEN
+DROP FUNCTION IF EXISTS public.get_all_users();
+DROP FUNCTION IF EXISTS public.get_user_stats();
+DROP FUNCTION IF EXISTS public.is_admin(UUID);
+DROP FUNCTION IF EXISTS public.get_user_role();
+
 -- 1. FUNCIÓN RPC PARA OBTENER TODOS LOS USUARIOS (SOLO ADMINS)
 CREATE OR REPLACE FUNCTION public.get_all_users()
 RETURNS TABLE(
