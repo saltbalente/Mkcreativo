@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Inicializar cliente de Supabase
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-        redirectTo: window.location.origin + '/bienvenido.html'
+        redirectTo: 'https://mkinnovador.com/bienvenido.html'
     }
 });
 
@@ -80,7 +80,7 @@ const auth = {
         
         try {
             // Primero intentar usar la función RPC si existe
-            const { data: isAdminRPC, error: rpcError } = await supabaseClient.rpc('is_admin');
+            const { data: isAdminRPC, error: rpcError } = await supabaseClient.rpc('is_admin', { user_id: user.id });
             if (!rpcError && isAdminRPC !== null) {
                 return isAdminRPC;
             }
