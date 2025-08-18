@@ -328,16 +328,11 @@
                     
                     // Verificar si es administrador
                     try {
-                        const { data: adminCheck, error: adminError } = await supabaseClient
-                            .rpc('is_admin');
-                        if (adminError) {
-                            console.error('Error verificando rol de admin:', adminError);
-                        } else {
-                            isAdmin = adminCheck === true;
-                            console.log('Admin check result:', adminCheck, 'isAdmin:', isAdmin);
-                        }
+                        isAdmin = await auth.isAdmin(user);
+                        console.log('Admin check result:', isAdmin, 'for user:', user.email);
                     } catch (adminError) {
                         console.error('Error verificando rol de admin:', adminError);
+                        isAdmin = false;
                     }
                     
                     updateNavigation(true, userName, isAdmin);
@@ -360,16 +355,11 @@
                 
                 // Verificar si es administrador
                 try {
-                    const { data: adminCheck, error: adminError } = await supabaseClient
-                        .rpc('is_admin');
-                    if (adminError) {
-                        console.error('Error verificando rol de admin:', adminError);
-                    } else {
-                        isAdmin = adminCheck === true;
-                        console.log('Admin check result (auth change):', adminCheck, 'isAdmin:', isAdmin);
-                    }
+                    isAdmin = await auth.isAdmin(user);
+                    console.log('Admin check result (auth change):', isAdmin, 'for user:', user.email);
                 } catch (adminError) {
                     console.error('Error verificando rol de admin:', adminError);
+                    isAdmin = false;
                 }
                 
                 updateNavigation(true, userName, isAdmin);
