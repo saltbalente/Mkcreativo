@@ -208,7 +208,7 @@
         }
 
         // Función para actualizar la navegación según el estado de autenticación
-        function updateNavigation(isLoggedIn, userName = '') {
+        function updateNavigation(isLoggedIn, userName = '', isAdmin = false) {
             const loginLink = document.getElementById('login-link');
             const registerLink = document.getElementById('register-link');
             const profileLink = document.getElementById('profile-link');
@@ -221,12 +221,21 @@
                 profileLink.style.display = 'inline';
                 logoutLink.style.display = 'inline';
                 
-                // Actualizar texto del enlace de perfil con el nombre del usuario
-                if (userName) {
-                    profileLink.textContent = userName;
-                    profileLink.title = 'Ver mi perfil';
+                // Configurar enlace según el rol del usuario
+                if (isAdmin) {
+                    // Admin: enlace al panel de administrador
+                    profileLink.href = 'admin.html';
+                    profileLink.textContent = userName || 'Admin Panel';
+                    profileLink.title = 'Ir al panel de administrador';
                 } else {
-                    profileLink.textContent = 'Mi Perfil';
+                    // Usuario normal: enlace al perfil
+                    profileLink.href = 'profile.html';
+                    if (userName) {
+                        profileLink.textContent = userName;
+                        profileLink.title = 'Ver mi perfil';
+                    } else {
+                        profileLink.textContent = 'Mi Perfil';
+                    }
                 }
             } else {
                 // Usuario no logueado: mostrar login/registro, ocultar perfil/logout
@@ -245,6 +254,7 @@
                 if (user) {
                     // Usuario autenticado
                     let userName = user.user_metadata?.full_name || user.email;
+                    let isAdmin = false;
                     
                     // Intentar obtener el nombre del perfil
                     try {
@@ -261,7 +271,16 @@
                         console.log('No se pudo obtener el perfil:', profileError);
                     }
                     
-                    updateNavigation(true, userName);
+                    // Verificar si es administrador
+                    try {
+                        const { data: adminCheck } = await supabaseClient
+                            .rpc('is_admin');
+                        isAdmin = adminCheck === true;
+                    } catch (adminError) {
+                        console.log('Error verificando rol de admin:', adminError);
+                    }
+                    
+                    updateNavigation(true, userName, isAdmin);
                 } else {
                     // Usuario no autenticado
                     updateNavigation(false);
@@ -273,11 +292,22 @@
         });
 
         // Escuchar cambios en el estado de autenticación
-        supabaseClient.auth.onAuthStateChange((event, session) => {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 const user = session.user;
-                const userName = user.user_metadata?.full_name || user.email;
-                updateNavigation(true, userName);
+                let userName = user.user_metadata?.full_name || user.email;
+                let isAdmin = false;
+                
+                // Verificar si es administrador
+                try {
+                    const { data: adminCheck } = await supabaseClient
+                        .rpc('is_admin');
+                    isAdmin = adminCheck === true;
+                } catch (adminError) {
+                    console.log('Error verificando rol de admin:', adminError);
+                }
+                
+                updateNavigation(true, userName, isAdmin);
             } else if (event === 'SIGNED_OUT') {
                 updateNavigation(false);
             }
