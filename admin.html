@@ -583,13 +583,13 @@
                         ${users.map(user => `
                             <tr data-user-id="${user.id}">
                                 <td>
-                                    <strong>${user.user_metadata?.full_name || 'Sin nombre'}</strong><br>
-                                    <small style="color: rgba(255,255,255,0.6);">${user.user_metadata?.company || 'Sin empresa'}</small>
+                                    <strong>${user.full_name || user.user_metadata?.full_name || 'Sin nombre'}</strong><br>
+                                    <small style="color: rgba(255,255,255,0.6);">Usuario registrado</small>
                                 </td>
-                                <td>${user.email}</td>
+                                <td>${user.email || 'Sin email'}</td>
                                 <td>
                                     <span class="user-status">
-                                        ${user.user_metadata?.user_type || 'N/A'}
+                                        ${user.role || user.user_metadata?.user_type || 'Usuario'}
                                     </span>
                                 </td>
                                 <td>
