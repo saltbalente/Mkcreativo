@@ -11,13 +11,34 @@
     <header class="header">
         <div class="container">
             <img src="img/mkcreativo-logo.svg" alt="mkCreativo" class="logo">
-            <nav class="nav-menu" id="nav-menu">
+            
+            <!-- Desktop Navigation -->
+            <nav class="nav-menu desktop-nav" id="nav-menu">
                 <a href="index.html">Inicio</a>
                 <a href="login.html" id="login-link">Iniciar Sesión</a>
                 <a href="register.html" id="register-link">Registrarse</a>
                 <a href="profile.html" id="profile-link" style="display: none;">Mi Perfil</a>
                 <a href="#" id="logout-link" style="display: none;" onclick="signOut()">Cerrar Sesión</a>
                 <a href="privacy.html">Privacidad</a>
+            </nav>
+            
+            <!-- Mobile Hamburger Button -->
+            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <!-- Mobile Navigation -->
+            <nav class="mobile-nav" id="mobile-nav">
+                <div class="mobile-nav-content">
+                    <a href="index.html" onclick="closeMobileMenu()">Inicio</a>
+                    <a href="login.html" id="mobile-login-link" onclick="closeMobileMenu()">Iniciar Sesión</a>
+                    <a href="register.html" id="mobile-register-link" onclick="closeMobileMenu()">Registrarse</a>
+                    <a href="profile.html" id="mobile-profile-link" style="display: none;" onclick="closeMobileMenu()">Mi Perfil</a>
+                    <a href="#" id="mobile-logout-link" style="display: none;" onclick="signOut(); closeMobileMenu();">Cerrar Sesión</a>
+                    <a href="privacy.html" onclick="closeMobileMenu()">Privacidad</a>
+                </div>
             </nav>
         </div>
     </header>
@@ -209,17 +230,31 @@
 
         // Función para actualizar la navegación según el estado de autenticación
         function updateNavigation(isLoggedIn, userName = '', isAdmin = false) {
+            // Enlaces del menú desktop
             const loginLink = document.getElementById('login-link');
             const registerLink = document.getElementById('register-link');
             const profileLink = document.getElementById('profile-link');
             const logoutLink = document.getElementById('logout-link');
+            
+            // Enlaces del menú móvil
+            const mobileLoginLink = document.getElementById('mobile-login-link');
+            const mobileRegisterLink = document.getElementById('mobile-register-link');
+            const mobileProfileLink = document.getElementById('mobile-profile-link');
+            const mobileLogoutLink = document.getElementById('mobile-logout-link');
 
             if (isLoggedIn) {
                 // Usuario logueado: ocultar login/registro, mostrar perfil/logout
+                // Desktop
                 loginLink.style.display = 'none';
                 registerLink.style.display = 'none';
                 profileLink.style.display = 'inline';
                 logoutLink.style.display = 'inline';
+                
+                // Mobile
+                mobileLoginLink.style.display = 'none';
+                mobileRegisterLink.style.display = 'none';
+                mobileProfileLink.style.display = 'block';
+                mobileLogoutLink.style.display = 'block';
                 
                 // Configurar enlace según el rol del usuario
                 if (isAdmin) {
@@ -227,22 +262,36 @@
                     profileLink.href = 'admin.html';
                     profileLink.textContent = userName || 'Admin Panel';
                     profileLink.title = 'Ir al panel de administrador';
+                    
+                    mobileProfileLink.href = 'admin.html';
+                    mobileProfileLink.textContent = userName || 'Admin Panel';
                 } else {
                     // Usuario normal: enlace al perfil
                     profileLink.href = 'profile.html';
+                    mobileProfileLink.href = 'profile.html';
+                    
                     if (userName) {
                         profileLink.textContent = userName;
                         profileLink.title = 'Ver mi perfil';
+                        mobileProfileLink.textContent = userName;
                     } else {
                         profileLink.textContent = 'Mi Perfil';
+                        mobileProfileLink.textContent = 'Mi Perfil';
                     }
                 }
             } else {
                 // Usuario no logueado: mostrar login/registro, ocultar perfil/logout
+                // Desktop
                 loginLink.style.display = 'inline';
                 registerLink.style.display = 'inline';
                 profileLink.style.display = 'none';
                 logoutLink.style.display = 'none';
+                
+                // Mobile
+                mobileLoginLink.style.display = 'block';
+                mobileRegisterLink.style.display = 'block';
+                mobileProfileLink.style.display = 'none';
+                mobileLogoutLink.style.display = 'none';
             }
         }
 
@@ -310,6 +359,52 @@
                 updateNavigation(true, userName, isAdmin);
             } else if (event === 'SIGNED_OUT') {
                 updateNavigation(false);
+            }
+        });
+    </script>
+    
+    <!-- Mobile Menu JavaScript -->
+    <script>
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobile-nav');
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            
+            mobileNav.classList.toggle('active');
+            hamburgerBtn.classList.toggle('active');
+            
+            // Prevenir scroll del body cuando el menú está abierto
+            if (mobileNav.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        function closeMobileMenu() {
+            const mobileNav = document.getElementById('mobile-nav');
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            
+            mobileNav.classList.remove('active');
+            hamburgerBtn.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Cerrar menú al hacer clic fuera de él
+        document.addEventListener('click', function(event) {
+            const mobileNav = document.getElementById('mobile-nav');
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            
+            if (mobileNav.classList.contains('active') && 
+                !mobileNav.contains(event.target) && 
+                !hamburgerBtn.contains(event.target)) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Cerrar menú al presionar Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeMobileMenu();
             }
         });
     </script>
