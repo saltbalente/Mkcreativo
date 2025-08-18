@@ -210,8 +210,9 @@
             </p>
             
             <div class="welcome-actions">
-                <a href="index.html" class="btn-welcome btn-primary">Explorar Servicios</a>
-                <a href="login.html" class="btn-welcome btn-secondary">Iniciar Sesión</a>
+                <a href="profile.html" class="btn-welcome btn-primary">Ver Mi Perfil</a>
+                <a href="index.html" class="btn-welcome btn-secondary">Explorar Servicios</a>
+                <button onclick="signOut()" class="btn-welcome btn-secondary">Cerrar Sesión</button>
             </div>
             
             <div class="welcome-features">
@@ -256,6 +257,20 @@
                 console.log('Usuario no autenticado o error:', error);
             }
         });
+        
+        // Función para cerrar sesión
+        async function signOut() {
+            try {
+                const { error } = await supabaseClient.auth.signOut();
+                if (error) throw error;
+                
+                alert('Sesión cerrada correctamente');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error cerrando sesión:', error);
+                alert('Error al cerrar sesión');
+            }
+        }
         
         // Función para redirigir después de un tiempo
         setTimeout(() => {
